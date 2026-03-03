@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Legacy · Link</title>
+    <title>Minecraft Legacy · dynamic page</title>
     <style>
-        /* minimal, clean, centered style */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* === exact same style — only cleaner === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1e1e2f;
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
@@ -22,13 +18,12 @@
             padding: 16px;
         }
         .card {
-            max-width: 680px;
+            max-width: 720px;
             width: 100%;
             background: #f8fafc;
             border-radius: 2rem;
             box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.6), 0 8px 16px -6px #0f0f1e;
             padding: 2.5rem 2rem;
-            transition: 0.2s;
             border: 1px solid #cad5e0;
         }
         h1 {
@@ -38,8 +33,7 @@
             color: #0b1e33;
             border-left: 8px solid #3b7f5c;
             padding-left: 1.2rem;
-            margin-top: 0;
-            margin-bottom: 1.4rem;
+            margin-bottom: 1.8rem;
             line-height: 1.2;
             word-break: break-word;
         }
@@ -77,7 +71,7 @@
             background: #1c2a3a;
             border-radius: 20px;
             padding: 1.2rem 1.5rem;
-            margin: 2rem 0 0.5rem 0;
+            margin: 2rem 0 1.2rem 0;
             color: #e6eefc;
             font-size: 1.7rem;
             font-family: 'Courier New', 'Fira Code', monospace;
@@ -111,14 +105,14 @@
             border: 1px solid #b68b40;
         }
         .secondary-info {
-            margin-top: 2.3rem;
+            margin-top: 2rem;
             border-top: 2px dashed #a0b8cc;
             padding-top: 1.2rem;
-            font-size: 0.9rem;
-            color: #375a77;
+            font-size: 0.95rem;
+            color: #2e4a6b;
             display: flex;
             flex-wrap: wrap;
-            gap: 1.2rem;
+            gap: 1rem;
             justify-content: space-between;
             align-items: center;
         }
@@ -127,52 +121,146 @@
             border-radius: 30px;
             padding: 0.3rem 1.2rem;
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #102331;
+            transition: all 0.1s;
         }
         .compile-date {
-            color: #2b4b6e;
+            background: #e9eff5;
+            border-radius: 30px;
+            padding: 0.3rem 1.2rem;
             display: flex;
             align-items: center;
-            gap: 5px;
-            background: #e9eff5;
-            padding: 0.3rem 1.2rem;
-            border-radius: 30px;
+            gap: 6px;
+            color: #0d3f5c;
+            font-family: monospace;
         }
-        /* responsive */
         @media (max-width: 480px) {
             h1 { font-size: 1.8rem; }
-            .url-highlight { font-size: 1.4rem; padding: 0.8rem; }
+            .url-highlight { font-size: 1.3rem; padding: 0.7rem; }
             .password-box { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <!-- Main title exactly as requested -->
         <h1>Minecraft Legacy for Windows (compiled)</h1>
 
-        <!-- URL below the title: enlaza.site/ID4L0C -->
-        <div class="url-highlight">
-            🔗 <a href="http://enlaza.site/ID4L0C" target="_blank" rel="noopener noreferrer">enlaza.site/ID4L0C</a>
+        <!-- dynamic url container -->
+        <div class="url-highlight" id="url-container">
+            🔗 <a href="#" id="dynamic-link" target="_blank" rel="noopener noreferrer">enlaza.site/ID4L0C</a>
         </div>
 
-        <!-- Password line: "password: ZnVja3lvdW1pY3Jvc2xvcA0K" (exact case) -->
-        <div class="password-box">
+        <!-- dynamic password container -->
+        <div class="password-box" id="password-container">
             <span class="password-label">🔑 PASSWORD</span>
-            <span class="password-value">ZnVja3lvdW1pY3Jvc2xvcA0K</span>
+            <span class="password-value" id="dynamic-password">ZnVja3lvdW1pY3Jvc2xvcA0K</span>
         </div>
 
-        <!-- Extra file context — translated to English, "compiled:" instead of "uploaded", location removed -->
+        <!-- dynamic build date + dynamic file size (read from url.txt) -->
         <div class="secondary-info">
             <span class="file-badge">📦 Minecraft Legacy.7z</span>
-            <span class="file-badge">🧾 689.91 MB</span>
-            <span class="compile-date">📅 compiled: 2026-03-02</span>
+            <!-- size will be updated from SIZE: field -->
+            <span class="file-badge" id="file-size-badge">🧾 689.91 MB</span>
+            <span class="compile-date" id="build-date-container">📅 compiled: <span id="build-date-value">02-03-2026 18:28:39</span></span>
         </div>
-
-        <!-- The extra note about the password suffix has been completely removed (as requested) -->
     </div>
 
-    <!-- pure single HTML file, no external resources -->
+    <script>
+        (function() {
+            // ----- helper: fetch with no-cache -----
+            async function fetchTextFile(url, defaultValue, parser = (text) => text.trim()) {
+                try {
+                    const response = await fetch(url, { cache: "no-store" });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const raw = await response.text();
+                    return parser(raw);
+                } catch (e) {
+                    console.warn(`failed to fetch ${url}:`, e);
+                    return defaultValue;
+                }
+            }
+
+            // ----- parse url.txt with SIZE field -----
+            // format: "URL: ... PSSWORD: ... SIZE: ..." (any order, case-insensitive)
+            function parseUrlPasswordSize(text) {
+                // defaults
+                let url = null;
+                let pwd = null;
+                let size = null;
+
+                // case-insensitive regexps
+                const urlMatch = text.match(/URL:\s*(\S+)/i);
+                const pwdMatch = text.match(/PSSWORD:\s*(\S+)/i);
+                const sizeMatch = text.match(/SIZE:\s*(.+?)(?:\r?\n|$)/i);
+
+                if (urlMatch && urlMatch[1]) url = urlMatch[1].trim();
+                if (pwdMatch && pwdMatch[1]) pwd = pwdMatch[1].trim();
+                if (sizeMatch && sizeMatch[1]) size = sizeMatch[1].trim();
+
+                return { url, pwd, size };
+            }
+
+            // ----- update UI -----
+            async function refreshFromRepo() {
+                // 1. fetch url.txt (contains URL + PSSWORD + SIZE)
+                const urlTxtDefault = "URL: enlaza.site/ID4L0C PSSWORD: ZnVja3lvdW1pY3Jvc2xvcA0K SIZE: 689.91 MB";
+                const urlTxtRaw = await fetchTextFile('url.txt', urlTxtDefault);
+                const { url, pwd, size } = parseUrlPasswordSize(urlTxtRaw);
+
+                // 2. fetch build_date.txt (format DD-MM-AAAA HH:MM:SS)
+                const defaultDate = "02-03-2026 18:28:39";
+                const buildDate = await fetchTextFile('build_date.txt', defaultDate, (t) => t.trim());
+
+                // 3. update DOM elements
+                // URL link
+                const linkEl = document.getElementById('dynamic-link');
+                if (linkEl) {
+                    if (url) {
+                        let href = url;
+                        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                            href = 'http://' + url;
+                        }
+                        linkEl.href = href;
+                        linkEl.textContent = url;
+                    } else {
+                        linkEl.href = '#';
+                        linkEl.textContent = '⚠️ no url';
+                    }
+                }
+
+                // password
+                const pwdEl = document.getElementById('dynamic-password');
+                if (pwdEl) {
+                    pwdEl.textContent = pwd || '⚠️ no password';
+                }
+
+                // file size badge
+                const sizeEl = document.getElementById('file-size-badge');
+                if (sizeEl) {
+                    sizeEl.innerHTML = size ? `🧾 ${size}` : `🧾 689.91 MB`;
+                }
+
+                // build date
+                const dateEl = document.getElementById('build-date-value');
+                if (dateEl) {
+                    dateEl.textContent = buildDate || '02-03-2026 18:28:39';
+                }
+            }
+
+            // ----- initial load and refresh setup -----
+            refreshFromRepo();
+
+            // Re-fetch when tab becomes visible (user returns to the page)
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    refreshFromRepo();
+                }
+            });
+
+            // Also check every 2 minutes for background updates
+            setInterval(refreshFromRepo, 120000);
+        })();
+    </script>
 </body>
 </html>
