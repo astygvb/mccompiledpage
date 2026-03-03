@@ -148,36 +148,36 @@
 
         <!-- dynamic url container (starts empty) -->
         <div class="url-highlight" id="url-container">
-            🔗 <a href="#" id="dynamic-link" target="_blank" rel="noopener noreferrer">⚠️ loading...</a>
+            🔗 <a href="#" id="dynamic-link" target="_blank" rel="noopener noreferrer"></a>
         </div>
 
         <!-- dynamic password container (starts empty) -->
         <div class="password-box" id="password-container">
             <span class="password-label">🔑 PASSWORD</span>
-            <span class="password-value" id="dynamic-password">⚠️ loading...</span>
+            <span class="password-value" id="dynamic-password"></span>
         </div>
 
         <!-- dynamic build date + dynamic file size (both start empty) -->
         <div class="secondary-info">
             <span class="file-badge">📦 Minecraft Legacy.7z</span>
             <!-- size will be updated from SIZE: field -->
-            <span class="file-badge" id="file-size-badge">🧾 ⏳ loading...</span>
-            <span class="compile-date" id="build-date-container">📅 compiled: <span id="build-date-value">⏳ loading...</span></span>
+            <span class="file-badge" id="file-size-badge"></span>
+            <span class="compile-date" id="build-date-container">📅 compiled: <span id="build-date-value"></span></span>
         </div>
     </div>
 
     <script>
         (function() {
             // ----- helper: fetch with no-cache -----
-            async function fetchTextFile(url, defaultValue = null) {
+            async function fetchTextFile(url) {
                 try {
                     const response = await fetch(url, { cache: "no-store" });
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const raw = await response.text();
-                    return raw.trim() || defaultValue;
+                    return raw.trim() || null;  // Return null if empty
                 } catch (e) {
                     console.warn(`failed to fetch ${url}:`, e);
-                    return defaultValue;  // returns null if fetch fails
+                    return null;  // Return null on any error
                 }
             }
 
@@ -224,26 +224,26 @@
                         linkEl.textContent = url;
                     } else {
                         linkEl.href = '#';
-                        linkEl.textContent = '❌ no url in url.txt';
+                        linkEl.textContent = '❌ missing or invalid url.txt';
                     }
                 }
 
                 // password
                 const pwdEl = document.getElementById('dynamic-password');
                 if (pwdEl) {
-                    pwdEl.textContent = pwd || '❌ no password in url.txt';
+                    pwdEl.textContent = pwd || '❌ missing or invalid url.txt';
                 }
 
                 // file size badge
                 const sizeEl = document.getElementById('file-size-badge');
                 if (sizeEl) {
-                    sizeEl.innerHTML = size ? `🧾 ${size}` : `🧾 ❌ no size in url.txt`;
+                    sizeEl.innerHTML = size ? `🧾 ${size}` : '🧾 ❌ missing or invalid url.txt';
                 }
 
                 // build date
                 const dateEl = document.getElementById('build-date-value');
                 if (dateEl) {
-                    dateEl.textContent = buildDate || '❌ no build_date.txt';
+                    dateEl.textContent = buildDate || '❌ missing or invalid build_date.txt';
                 }
             }
 
